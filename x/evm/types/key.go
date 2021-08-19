@@ -30,6 +30,7 @@ const (
 	prefixLogs
 	prefixCode
 	prefixStorage
+	prefixTxLogNum
 )
 
 const (
@@ -50,6 +51,7 @@ var (
 	KeyPrefixLogs               = []byte{prefixLogs}
 	KeyPrefixCode               = []byte{prefixCode}
 	KeyPrefixStorage            = []byte{prefixStorage}
+	KeyPrefixTxLogNum           = []byte{prefixTxLogNum}
 )
 
 var (
