@@ -142,7 +142,7 @@ func TestAppImportExport(t *testing.T) {
 
 	fmt.Printf("exporting genesis...\n")
 
-	exported, err := app.ExportAppStateAndValidators(false, []string{})
+	exported, err := app.ExportAppStateAndValidators(false, []string{}, "")
 	require.NoError(t, err)
 
 	fmt.Printf("importing genesis...\n")
@@ -247,7 +247,7 @@ func TestAppSimulationAfterImport(t *testing.T) {
 
 	fmt.Printf("exporting genesis...\n")
 
-	exported, err := app.ExportAppStateAndValidators(true, []string{})
+	exported, err := app.ExportAppStateAndValidators(true, []string{}, "")
 	require.NoError(t, err)
 
 	fmt.Printf("importing genesis...\n")

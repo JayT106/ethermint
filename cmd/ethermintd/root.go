@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/spf13/cast"
@@ -251,6 +252,21 @@ func (a appCreator) appExport(
 		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
+	exportBin, ok := appOpts.Get(flags.FlagExportGenesisToFiles).(bool)
+	var exportPath = ""
+	if ok && exportBin {
+		exportPath, ok := appOpts.Get(flags.FlagExportGenesisFilePath).(string)
+		if !ok || exportPath == "" {
+			b, err := os.Executable()
+			if err != nil {
+				return servertypes.ExportedApp{}, errors.New("application path not found")
+			}
+			exportPath = filepath.Dir(b)
+		}
+
+		exportPath = path.Join(exportPath, "genesis")
+	}
+
 	if height != -1 {
 		ethermintApp = app.NewEthermintApp(logger, db, traceStore, false, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
 
@@ -261,5 +277,5 @@ func (a appCreator) appExport(
 		ethermintApp = app.NewEthermintApp(logger, db, traceStore, true, map[int64]bool{}, "", uint(1), a.encCfg, appOpts)
 	}
 
-	return ethermintApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+	return ethermintApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, exportPath)
 }

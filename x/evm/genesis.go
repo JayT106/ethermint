@@ -2,7 +2,11 @@ package evm
 
 import (
 	"bytes"
+	"encoding/binary"
+	"errors"
 	"fmt"
+	"os"
+	"path"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -93,4 +97,152 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper) *t
 		Accounts: ethGenAccounts,
 		Params:   k.GetParams(ctx),
 	}
+}
+
+func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	var fileIndex = 0
+	fn := fmt.Sprintf("genesis%d", fileIndex)
+	filePath := path.Join(exportPath, fn)
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// write the params
+	param := k.GetParams(ctx)
+	encodedParam, err := param.Marshal()
+	if err != nil {
+		return err
+	}
+
+	fs := 0
+	offset := 0
+	b := make([]byte, 4)
+	binary.LittleEndian.PutUint32(b, uint32(len(encodedParam)))
+	n, err := f.Write(b)
+	if err != nil {
+		return err
+	}
+	fs += n
+
+	n, err = f.Write(encodedParam)
+	if err != nil {
+		return err
+	}
+	fs += n
+	offset = fs
+	counts := 0
+	// leaving space for writing toal account numbers
+	b = make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, 0)
+	n, err = f.Write(b)
+	if err != nil {
+		return err
+	}
+	fs += n
+
+	// write the account info into marshal proto message.
+	ctxDone := false
+	var e = error(nil)
+
+	ak.IterateAccounts(ctx, func(account authtypes.AccountI) bool {
+		select {
+		case <-ctx.Context().Done():
+			ctxDone = true
+			return true
+		default:
+			ethAccount, ok := account.(ethermint.EthAccountI)
+			if !ok {
+				// ignore non EthAccounts
+				return false
+			}
+
+			addr := ethAccount.EthAddress()
+			storage := k.GetAccountStorage(ctx, addr)
+
+			genAccount := types.GenesisAccount{
+				Address: addr.String(),
+				Code:    common.Bytes2Hex(k.GetCode(ctx, ethAccount.GetCodeHash())),
+				Storage: storage,
+			}
+
+			bz, err := genAccount.Marshal()
+			if err != nil {
+				e = fmt.Errorf("genesus account marshal err: %s", err)
+				return true
+			}
+
+			b := make([]byte, 4)
+			binary.LittleEndian.PutUint32(b, uint32(len(bz)))
+			n, err = f.Write(b)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			n, err = f.Write(bz)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			// we limited the file size to 100M
+			if fs > 100000000 {
+				err := f.Close()
+				if err != nil {
+					e = err
+					return true
+				}
+
+				fileIndex++
+				f, err = os.Create(filePath)
+				if err != nil {
+					e = err
+					return true
+				}
+
+				fs = 0
+			}
+
+			counts++
+			return false
+		}
+	})
+
+	if ctxDone {
+		return errors.New("genesus export terminated")
+	}
+
+	if e != nil {
+		return e
+	}
+
+	// close the current file and reopen the first file and update
+	// the account numbers in the file
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	fileIndex = 0
+	f, err = os.OpenFile(filePath, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+
+	b = make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(counts))
+	_, err = f.WriteAt(b, int64(offset))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

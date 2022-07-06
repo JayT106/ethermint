@@ -190,3 +190,14 @@ func (AppModule) GenerateGenesisState(simState *module.SimulationState) {
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	return nil
 }
+
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
+	return ExportGenesisTo(ctx, am.keeper, am.ak, exportPath)
+}
+
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	// var genesisState types.GenesisState
+	// cdc.MustUnmarshalJSON(data, &genesisState)
+	// InitGenesis(ctx, am.accountKeeper, genesisState)
+	return []abci.ValidatorUpdate{}, nil
+}

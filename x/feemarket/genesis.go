@@ -1,6 +1,9 @@
 package feemarket
 
 import (
+	"os"
+	"path"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -34,4 +37,25 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 		BaseFee:  baseFee,
 		BlockGas: k.GetBlockGasUsed(ctx),
 	}
+}
+
+func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	filePath := path.Join(exportPath, "genesis0")
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs := ExportGenesis(ctx, k)
+	encoded, err := gs.Marshal()
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(encoded)
+	return err
 }

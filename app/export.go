@@ -25,7 +25,7 @@ func NewDefaultGenesisState() simapp.GenesisState {
 // ExportAppStateAndValidators exports the state of the application for a genesis
 // file.
 func (app *EthermintApp) ExportAppStateAndValidators(
-	forZeroHeight bool, jailAllowedAddrs []string,
+	forZeroHeight bool, jailAllowedAddrs []string, exportPath string,
 ) (servertypes.ExportedApp, error) {
 	// Creates context with current height and checks txs for ctx to be usable by start of next block
 	ctx := app.NewContext(true, tmproto.Header{Height: app.LastBlockHeight()})
@@ -41,7 +41,10 @@ func (app *EthermintApp) ExportAppStateAndValidators(
 		}
 	}
 
-	genState := app.mm.ExportGenesis(ctx, app.appCodec)
+	genState, err := app.mm.ExportGenesis(ctx, app.appCodec)
+	if err != nil {
+		return servertypes.ExportedApp{}, err
+	}
 	appState, err := json.MarshalIndent(genState, "", "  ")
 	if err != nil {
 		return servertypes.ExportedApp{}, err

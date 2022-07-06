@@ -148,12 +148,15 @@ require (
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/olebedev/go-duktape.v3 v3.0.0-20200619000410-60c24ae608a6 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect; indirectgenesis-file-export
 	nhooyr.io/websocket v1.8.6 // indirect
 )
 
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
+	// TODO: remove once v0.45 is released
+	github.com/cosmos/cosmos-sdk => github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220705201145-9495d8cda98c
+	github.com/cosmos/ibc-go/v2 => github.com/jayt106/ibc-go/v2 v2.2.1-0.20220707001642-6c3bfe414693
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	google.golang.org/grpc => google.golang.org/grpc v1.33.2
 )
