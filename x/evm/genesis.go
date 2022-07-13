@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"runtime/debug"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -99,7 +100,17 @@ func ExportGenesis(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper) *t
 	}
 }
 
+func Recover() {
+	if r := recover(); r != nil {
+		if _, ok := r.(error); ok {
+			fmt.Printf("dump err: %s\n", debug.Stack())
+		}
+	}
+}
+
 func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, exportPath string) error {
+	defer Recover()
+
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
@@ -150,6 +161,8 @@ func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, 
 	ctxDone := false
 	var e = error(nil)
 
+	fmt.Printf("IterateAccounts:\n")
+
 	ak.IterateAccounts(ctx, func(account authtypes.AccountI) bool {
 		select {
 		case <-ctx.Context().Done():
@@ -163,7 +176,9 @@ func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, 
 			}
 
 			addr := ethAccount.EthAddress()
+			fmt.Printf("addr: %s\n", addr)
 			storage := k.GetAccountStorage(ctx, addr)
+			fmt.Printf("storage: %d\n", len(storage))
 
 			genAccount := types.GenesisAccount{
 				Address: addr.String(),
@@ -185,6 +200,7 @@ func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, 
 				return true
 			}
 			fs += n
+			fmt.Printf("account marshal size: %d\n", n)
 
 			n, err = f.Write(bz)
 			if err != nil {
