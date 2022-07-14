@@ -661,8 +661,12 @@ github.com/jackpal/go-nat-pmp v1.0.2-0.20160603034137-1fa385a6f458 h1:6OvNmYgJye
 github.com/jackpal/go-nat-pmp v1.0.2-0.20160603034137-1fa385a6f458/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=
 github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220705201145-9495d8cda98c h1:UvDEoXhXvNW/tlIhozMJ4KtwJtbAP8jk9efVu28ywo8=
 github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220705201145-9495d8cda98c/go.mod h1:WOqtDxN3eCCmnYLVla10xG7lEXkFjpTaqm2a2WasgCc=
+github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220714191740-3b1ee7d8c788 h1:nlcv5zFw66rJ2w1hqYN+5XocnHPSHpTZKPuI8jxdbBg=
+github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220714191740-3b1ee7d8c788/go.mod h1:CIRa2U5yRbB5ZHEJQbVxMHJTnTovFnDl1u81kNQTHlo=
 github.com/jayt106/ibc-go/v2 v2.2.1-0.20220707001642-6c3bfe414693 h1:L3edgYPMD1woS6QxNjB5XfzBkVlTucCcIobs7HYuQJ8=
 github.com/jayt106/ibc-go/v2 v2.2.1-0.20220707001642-6c3bfe414693/go.mod h1:5wieOF25RX4crfuERb3d11Lx2RhpfNS/7FcEy3rWeYY=
+github.com/jayt106/ibc-go/v2 v2.2.1-0.20220714192844-d03b1bc038d1 h1:ty3k27F6p2BUZGg3e5Ju7DvL0y9/kVMBKdZ4aA+EdBo=
+github.com/jayt106/ibc-go/v2 v2.2.1-0.20220714192844-d03b1bc038d1/go.mod h1:69JfSmFpJCvsT/ejOq/rmP2a03vtWLb2n9qRCvFsklA=
 github.com/jayt106/ibc-go/v3 v3.1.1-0.20220706214621-d201eaa03fcb h1:HbnqHSWh7KDimv1lqwp5fD1bAdW8c/3XnrpK28ox7Go=
 github.com/jayt106/ibc-go/v3 v3.1.1-0.20220706214621-d201eaa03fcb/go.mod h1:8BLr5TweV0tnOi+m8/PY09ofV1WC96tprRR59/q4nag=
 github.com/jayt106/tm-db v0.6.8-0.20220714151545-a51b347ddefe h1:wIttGZ4bX9213Wv0R+73yhd857g3XJ01CB3eGMU/aAs=
