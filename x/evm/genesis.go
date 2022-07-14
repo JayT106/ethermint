@@ -176,9 +176,7 @@ func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, 
 			}
 
 			addr := ethAccount.EthAddress()
-			fmt.Printf("addr: %s\n", addr)
 			storage := k.GetAccountStorage(ctx, addr)
-			fmt.Printf("storage: %d\n", len(storage))
 
 			genAccount := types.GenesisAccount{
 				Address: addr.String(),
@@ -200,7 +198,6 @@ func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, 
 				return true
 			}
 			fs += n
-			fmt.Printf("account marshal size: %d\n", n)
 
 			n, err = f.Write(bz)
 			if err != nil {
