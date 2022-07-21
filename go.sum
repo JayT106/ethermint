@@ -667,6 +667,8 @@ github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220714191740-3b1ee7d8c788 h1:nlcv5
 github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220714191740-3b1ee7d8c788/go.mod h1:CIRa2U5yRbB5ZHEJQbVxMHJTnTovFnDl1u81kNQTHlo=
 github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220720153131-cf1c0671de90 h1:VjxvQgz0F3hF5o7Wj/D7fIbXgL1EZYCOUg8DHkI7FkA=
 github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220720153131-cf1c0671de90/go.mod h1:pC/DOWwIybfvSyHnRZsYXAf2/G2hBvPjmJfyD+Ld5cc=
+github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220721142216-c550c0dd8274 h1:z+e4vKOZR72cB9ZAMZ2nrgKylM4ApyzXxWCNaQ27RUg=
+github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220721142216-c550c0dd8274/go.mod h1:pC/DOWwIybfvSyHnRZsYXAf2/G2hBvPjmJfyD+Ld5cc=
 github.com/jayt106/ibc-go/v2 v2.2.1-0.20220707001642-6c3bfe414693 h1:L3edgYPMD1woS6QxNjB5XfzBkVlTucCcIobs7HYuQJ8=
 github.com/jayt106/ibc-go/v2 v2.2.1-0.20220707001642-6c3bfe414693/go.mod h1:5wieOF25RX4crfuERb3d11Lx2RhpfNS/7FcEy3rWeYY=
 github.com/jayt106/ibc-go/v2 v2.2.1-0.20220714192844-d03b1bc038d1 h1:ty3k27F6p2BUZGg3e5Ju7DvL0y9/kVMBKdZ4aA+EdBo=

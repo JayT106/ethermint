@@ -155,7 +155,7 @@ require (
 replace (
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
 	// TODO: remove once v0.45 is released
-	github.com/cosmos/cosmos-sdk => github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220720153131-cf1c0671de90
+	github.com/cosmos/cosmos-sdk => github.com/jayt106/cosmos-sdk v0.43.0-rc2.0.20220721142216-c550c0dd8274
 	github.com/cosmos/ibc-go/v2 => github.com/jayt106/ibc-go/v2 v2.2.1-0.20220714192844-d03b1bc038d1
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/tendermint/tm-db => github.com/jayt106/tm-db v0.6.8-0.20220714151545-a51b347ddefe
