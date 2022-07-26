@@ -196,8 +196,5 @@ func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, export
 }
 
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// var genesisState types.GenesisState
-	// cdc.MustUnmarshalJSON(data, &genesisState)
-	// InitGenesis(ctx, am.accountKeeper, genesisState)
-	return []abci.ValidatorUpdate{}, nil
+	return InitGenesisFrom(ctx, am.keeper, am.ak, path)
 }
