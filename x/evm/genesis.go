@@ -155,9 +155,5 @@ func ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, k *keeper.Keeper, ak 
 		return err
 	}
 
-	if _, err := f.Write(bz); err != nil {
-		return err
-	}
-
 	return nil
 }
