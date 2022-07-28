@@ -7,6 +7,7 @@ import (
 	"path"
 	"runtime/debug"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -107,6 +108,7 @@ func Recover() {
 }
 
 func InitGenesisFrom(ctx sdk.Context,
+	cdc codec.JSONCodec,
 	k *keeper.Keeper,
 	ak types.AccountKeeper,
 	importPath string,
@@ -129,14 +131,11 @@ func InitGenesisFrom(ctx sdk.Context,
 	}
 
 	var gs types.GenesisState
-	if err := gs.Unmarshal(bz); err != nil {
-		return nil, err
-	}
-
+	cdc.MustUnmarshalJSON(bz, &gs)
 	return InitGenesis(ctx, k, ak, gs), nil
 }
 
-func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, exportPath string) error {
+func ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, k *keeper.Keeper, ak types.AccountKeeper, exportPath string) error {
 	defer Recover()
 
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
@@ -151,9 +150,9 @@ func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, 
 	defer f.Close()
 
 	gs := ExportGenesis(ctx, k, ak)
-	bz, err := gs.Marshal()
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
+	bz := cdc.MustMarshalJSON(gs)
+	if _, err := f.Write(bz); err != nil {
+		return err
 	}
 
 	if _, err := f.Write(bz); err != nil {

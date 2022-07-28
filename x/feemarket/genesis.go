@@ -69,10 +69,6 @@ func ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, k keeper.Keeper, expo
 		return err
 	}
 
-	if err := os.MkdirAll(exportPath, 0755); err != nil {
-		return err
-	}
-
 	fp := path.Join(exportPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
 	f, err := os.Create(fp)
 	if err != nil {
