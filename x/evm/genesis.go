@@ -128,12 +128,12 @@ func InitGenesisFrom(ctx sdk.Context,
 		return nil, err
 	}
 
-	var gs *types.GenesisState
+	var gs types.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return nil, err
 	}
 
-	return InitGenesis(ctx, k, ak, *gs), nil
+	return InitGenesis(ctx, k, ak, gs), nil
 }
 
 func ExportGenesisTo(ctx sdk.Context, k *keeper.Keeper, ak types.AccountKeeper, exportPath string) error {

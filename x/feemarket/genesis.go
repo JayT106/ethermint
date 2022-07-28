@@ -58,12 +58,12 @@ func InitGenesisFrom(ctx sdk.Context, k keeper.Keeper, importPath string) ([]abc
 		return nil, err
 	}
 
-	var gs *types.GenesisState
+	var gs types.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return nil, err
 	}
 
-	return InitGenesis(ctx, k, *gs), nil
+	return InitGenesis(ctx, k, gs), nil
 }
 
 func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
