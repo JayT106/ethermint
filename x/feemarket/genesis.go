@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	abci "github.com/tendermint/tendermint/abci/types"
 
@@ -40,7 +41,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	}
 }
 
-func InitGenesisFrom(ctx sdk.Context, k keeper.Keeper, importPath string) ([]abci.ValidatorUpdate, error) {
+func InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, k keeper.Keeper, importPath string) ([]abci.ValidatorUpdate, error) {
 	fp := path.Join(importPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
 	f, err := os.OpenFile(fp, os.O_RDONLY, 0666)
 	if err != nil {
@@ -59,14 +60,11 @@ func InitGenesisFrom(ctx sdk.Context, k keeper.Keeper, importPath string) ([]abc
 	}
 
 	var gs types.GenesisState
-	if err := gs.Unmarshal(bz); err != nil {
-		return nil, err
-	}
-
+	cdc.MustUnmarshalJSON(bz, &gs)
 	return InitGenesis(ctx, k, gs), nil
 }
 
-func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
+func ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, k keeper.Keeper, exportPath string) error {
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
@@ -83,11 +81,7 @@ func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error 
 	defer f.Close()
 
 	gs := ExportGenesis(ctx, k)
-	bz, err := gs.Marshal()
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
-	}
-
+	bz := cdc.MustMarshalJSON(gs)
 	if _, err := f.Write(bz); err != nil {
 		return err
 	}

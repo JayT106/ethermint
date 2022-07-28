@@ -187,9 +187,9 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 }
 
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
-	return ExportGenesisTo(ctx, am.keeper, exportPath)
+	return ExportGenesisTo(ctx, cdc, am.keeper, exportPath)
 }
 
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	return InitGenesisFrom(ctx, am.keeper, path)
+	return InitGenesisFrom(ctx, cdc, am.keeper, path)
 }
