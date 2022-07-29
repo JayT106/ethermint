@@ -126,13 +126,18 @@ func InitGenesisFrom(ctx sdk.Context,
 	}
 
 	bz := make([]byte, fi.Size())
-	total, err := f.Read(bz)
-	if err != nil {
-		return nil, err
-	}
+	offset := 0
+	for {
+		n, err := f.ReadAt(bz[offset:], int64(offset))
+		if err != nil {
+			return nil, err
+		}
 
-	if int64(total) != fi.Size() {
-		panic(fmt.Sprintf("could not read entire genesis file, %d != %d", total, fi.Size()))
+		offset += n
+
+		if n == 0 || offset == len(bz) {
+			break
+		}
 	}
 
 	var gs types.GenesisState
