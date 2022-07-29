@@ -126,12 +126,13 @@ func InitGenesisFrom(ctx sdk.Context,
 	}
 
 	bz := make([]byte, fi.Size())
-	if _, err := f.Read(bz); err != nil {
+	total, err := f.Read(bz)
+	if err != nil {
 		return nil, err
 	}
 
 	var gs types.GenesisState
-	cdc.MustUnmarshalJSON(bz, &gs)
+	cdc.MustUnmarshalJSON(bz[:total], &gs)
 	return InitGenesis(ctx, k, ak, gs), nil
 }
 
