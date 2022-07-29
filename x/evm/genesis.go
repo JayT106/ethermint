@@ -131,8 +131,12 @@ func InitGenesisFrom(ctx sdk.Context,
 		return nil, err
 	}
 
+	if int64(total) != fi.Size() {
+		panic("could not read entire genesis file")
+	}
+
 	var gs types.GenesisState
-	cdc.MustUnmarshalJSON(bz[:total], &gs)
+	cdc.MustUnmarshalJSON(bz, &gs)
 	return InitGenesis(ctx, k, ak, gs), nil
 }
 
