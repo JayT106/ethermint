@@ -35,7 +35,7 @@ func InitGenesis(
 		panic("the EVM module account has not been set")
 	}
 
-	for _, account := range data.Accounts {
+	for i, account := range data.Accounts {
 		address := common.HexToAddress(account.Address)
 		accAddress := sdk.AccAddress(address.Bytes())
 		// check that the EVM balance the matches the account balance
@@ -56,6 +56,7 @@ func InitGenesis(
 		code := common.Hex2Bytes(account.Code)
 		codeHash := crypto.Keccak256Hash(code)
 		if !bytes.Equal(ethAcct.GetCodeHash().Bytes(), codeHash.Bytes()) {
+			fmt.Printf("code hash mismatch for account %s, index:%d/%d,\n codeHash: %v, ethAcctHash: %v\n", account.Address, i, len(data.Accounts), codeHash, ethAcct.GetCodeHash())
 			panic("code don't match codeHash")
 		}
 
