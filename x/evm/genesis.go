@@ -132,7 +132,7 @@ func InitGenesisFrom(ctx sdk.Context,
 	}
 
 	if int64(total) != fi.Size() {
-		panic("could not read entire genesis file")
+		panic(fmt.Sprintf("could not read entire genesis file, %d != %d", total, fi.Size()))
 	}
 
 	var gs types.GenesisState
