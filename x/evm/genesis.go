@@ -134,6 +134,7 @@ func InitGenesisFrom(ctx sdk.Context,
 		}
 
 		offset += n
+		fmt.Printf("%d/%d\n", offset, fi.Size())
 
 		if n == 0 || offset == len(bz) {
 			break
