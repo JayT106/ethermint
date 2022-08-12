@@ -71,7 +71,7 @@ func InitGenesis(
 		codeHash := crypto.Keccak256Hash(code)
 		//!bytes.Equal(codeHash.Bytes(), emptycodehash) &&
 		if !bytes.Equal(ethAcct.GetCodeHash().Bytes(), codeHash.Bytes()) {
-			s := fmt.Sprintf("code hash mismatch acc: %s\n, index:%d/%d, codeHash: %v, ethAcctHash: %v\n", account, i, len(data.Accounts), codeHash, ethAcct.GetCodeHash())
+			s := fmt.Sprintf("code hash mismatch acc: %s\n, index:%d/%d, codeHash: %v, ethAcctHash: %v, accType: %d, ethaddr: %s\n", account, i, len(data.Accounts), codeHash, ethAcct.GetCodeHash(), ethAcct.Type(), ethAcct.EthAddress().Hex())
 			f.WriteString(s)
 			//panic("code don't match codeHash")
 			continue
