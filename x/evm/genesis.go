@@ -37,8 +37,18 @@ func InitGenesis(
 
 	fmt.Printf("emptycodehash: %s\n", common.BytesToHash(crypto.Keccak256(nil)).String())
 
-	emptycodehash := common.BytesToHash(crypto.Keccak256(nil)).Bytes()
-	cnt := 0
+	procDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	fp := path.Join(procDir, "accountExport.log")
+	f, err := os.Create(fp)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
 	for i, account := range data.Accounts {
 		address := common.HexToAddress(account.Address)
 		accAddress := sdk.AccAddress(address.Bytes())
@@ -59,13 +69,11 @@ func InitGenesis(
 
 		code := common.Hex2Bytes(account.Code)
 		codeHash := crypto.Keccak256Hash(code)
-		if !bytes.Equal(codeHash.Bytes(), emptycodehash) && !bytes.Equal(ethAcct.GetCodeHash().Bytes(), codeHash.Bytes()) {
-			fmt.Printf("code hash mismatch for account %s, index:%d/%d,\n codeHash: %v, ethAcctHash: %v, account code: %s, code: %s\n", account.Address, i, len(data.Accounts), codeHash, ethAcct.GetCodeHash(), account.Code, code)
+		//!bytes.Equal(codeHash.Bytes(), emptycodehash) &&
+		if !bytes.Equal(ethAcct.GetCodeHash().Bytes(), codeHash.Bytes()) {
+			s := fmt.Sprintf("code hash mismatch acc: %s\n, index:%d/%d, codeHash: %v, ethAcctHash: %v\n", account, i, len(data.Accounts), codeHash, ethAcct.GetCodeHash())
+			f.WriteString(s)
 			//panic("code don't match codeHash")
-			cnt++
-			if cnt == 10 {
-				panic("code don't match codeHash")
-			}
 			continue
 		}
 
