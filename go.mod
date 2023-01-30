@@ -199,4 +199,6 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 	// use cosmos flavored protobufs
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+
+	github.com/tendermint/tm-db => github.com/jayt106/tm-db v0.6.8-0.20220714151545-a51b347ddefe
 )
