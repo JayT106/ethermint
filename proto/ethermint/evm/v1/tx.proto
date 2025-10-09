@@ -50,6 +50,8 @@ message MsgEthereumTx {
   bytes from = 5;
   // raw is the raw bytes of the ethereum transaction
   bytes raw = 6 [(gogoproto.customtype) = "EthereumTx", (gogoproto.nullable) = false];
+  // memo is an optional field for additional transaction metadata
+  string memo = 7;
 }
 
 // LegacyTx is the transaction data of regular Ethereum transactions.

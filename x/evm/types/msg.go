@@ -42,11 +42,12 @@ import (
 )
 
 var (
-	_ sdk.Msg    = &MsgEthereumTx{}
-	_ sdk.Tx     = &MsgEthereumTx{}
-	_ ante.GasTx = &MsgEthereumTx{}
-	_ sdk.Msg    = &MsgUpdateParams{}
-	_ sdk.Msg    = &MsgRegisterPreinstalls{}
+	_ sdk.Msg        = &MsgEthereumTx{}
+	_ sdk.Tx         = &MsgEthereumTx{}
+	_ ante.GasTx     = &MsgEthereumTx{}
+	_ sdk.TxWithMemo = &MsgEthereumTx{}
+	_ sdk.Msg        = &MsgUpdateParams{}
+	_ sdk.Msg        = &MsgRegisterPreinstalls{}
 
 	_ codectypes.UnpackInterfacesMessage = MsgEthereumTx{}
 )
@@ -289,6 +290,11 @@ func (msg MsgEthereumTx) GetEffectiveGasPrice(baseFee *big.Int) *big.Int {
 // sdk.AccAddress from its bytes
 func (msg *MsgEthereumTx) GetFrom() sdk.AccAddress {
 	return sdk.AccAddress(msg.From)
+}
+
+// GetMemo returns the memo field of the transaction
+func (msg *MsgEthereumTx) GetMemo() string {
+	return msg.Memo
 }
 
 // AsTransaction creates an Ethereum Transaction type from the msg fields

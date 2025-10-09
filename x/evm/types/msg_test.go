@@ -673,13 +673,12 @@ func (suite *MsgsTestSuite) TestFromEthereumTx() {
 			})
 
 			tx := ethtypes.NewTx(&ethtypes.SetCodeTx{
-				Nonce: 0,
-				Data:  nil,
-				To:    suite.to,
-				Value: uint256.NewInt(0),
-				Gas:       500000,
-				AuthList:  []ethtypes.SetCodeAuthorization{auth1, auth2},
-
+				Nonce:    0,
+				Data:     nil,
+				To:       suite.to,
+				Value:    uint256.NewInt(0),
+				Gas:      500000,
+				AuthList: []ethtypes.SetCodeAuthorization{auth1, auth2},
 			})
 			tx, err := ethtypes.SignTx(tx, ethtypes.NewPragueSigner(suite.chainID), ethPriv)
 			suite.Require().NoError(err)
@@ -814,6 +813,189 @@ func assertEqual(orig *ethtypes.Transaction, cpy *ethtypes.Transaction) error {
 		}
 	}
 	return nil
+}
+
+func (suite *MsgsTestSuite) TestMsgEthereumTx_Memo() {
+	testCases := []struct {
+		name     string
+		memo     string
+		buildMsg func(string) *types.MsgEthereumTx
+	}{
+		{
+			"empty memo",
+			"",
+			func(memo string) *types.MsgEthereumTx {
+				msg := types.NewTx(suite.chainID, 0, &suite.to, nil, 100000, big.NewInt(1), nil, nil, []byte("test"), nil)
+				msg.Memo = memo
+				return msg
+			},
+		},
+		{
+			"simple memo",
+			"test memo",
+			func(memo string) *types.MsgEthereumTx {
+				msg := types.NewTx(suite.chainID, 0, &suite.to, nil, 100000, big.NewInt(1), nil, nil, []byte("test"), nil)
+				msg.Memo = memo
+				return msg
+			},
+		},
+		{
+			"long memo",
+			"this is a very long memo that contains a lot of text to test the memo field functionality",
+			func(memo string) *types.MsgEthereumTx {
+				msg := types.NewTx(suite.chainID, 0, &suite.to, nil, 100000, big.NewInt(1), nil, nil, []byte("test"), nil)
+				msg.Memo = memo
+				return msg
+			},
+		},
+		{
+			"memo with special characters",
+			"🚀 priority=high; user=alice",
+			func(memo string) *types.MsgEthereumTx {
+				msg := types.NewTx(suite.chainID, 0, &suite.to, nil, 100000, big.NewInt(1), nil, nil, []byte("test"), nil)
+				msg.Memo = memo
+				return msg
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(tc.name, func() {
+			msg := tc.buildMsg(tc.memo)
+
+			// Test GetMemo
+			suite.Require().Equal(tc.memo, msg.GetMemo())
+
+			// Test interface implementation
+			var _ sdk.TxWithMemo = msg
+
+			// Test Marshal/Unmarshal preserves memo
+			bz, err := msg.Marshal()
+			suite.Require().NoError(err)
+
+			var decoded types.MsgEthereumTx
+			err = decoded.Unmarshal(bz)
+			suite.Require().NoError(err)
+
+			suite.Require().Equal(tc.memo, decoded.GetMemo())
+			suite.Require().Equal(msg.Memo, decoded.Memo)
+		})
+	}
+}
+
+func (suite *MsgsTestSuite) TestMsgEthereumTx_MemoBackwardCompatibility() {
+	// Test that transactions without memo field can still be unmarshaled
+	msg := types.NewTx(suite.chainID, 0, &suite.to, nil, 100000, big.NewInt(1), nil, nil, []byte("test"), nil)
+	msg.From = common.BigToAddress(big.NewInt(1)).Bytes()
+
+	// Marshal without explicitly setting memo
+	bz, err := msg.Marshal()
+	suite.Require().NoError(err)
+
+	// Unmarshal and verify memo is empty string
+	var decoded types.MsgEthereumTx
+	err = decoded.Unmarshal(bz)
+	suite.Require().NoError(err)
+
+	suite.Require().Empty(decoded.GetMemo())
+	suite.Require().Empty(decoded.Memo)
+
+	// Verify all other fields are preserved
+	suite.Require().Equal(msg.From, decoded.From)
+	suite.Require().Equal(msg.Raw.Transaction.Hash(), decoded.Raw.Transaction.Hash())
+}
+
+func (suite *MsgsTestSuite) TestMsgEthereumTx_MemoWithDifferentTxTypes() {
+	memo := "priority=high"
+	validFrom := common.BigToAddress(big.NewInt(1)).Bytes()
+
+	testCases := []struct {
+		name string
+		msg  *types.MsgEthereumTx
+	}{
+		{
+			"LegacyTx with memo",
+			types.NewTx(nil, 0, &suite.to, big.NewInt(100), 100000, big.NewInt(1), nil, nil, []byte("test"), nil),
+		},
+		{
+			"AccessListTx with memo",
+			types.NewTx(suite.chainID, 0, &suite.to, big.NewInt(100), 100000, big.NewInt(1), nil, nil, []byte("test"), &ethtypes.AccessList{}),
+		},
+		{
+			"DynamicFeeTx with memo",
+			types.NewTx(suite.chainID, 0, &suite.to, big.NewInt(100), 100000, nil, big.NewInt(2), big.NewInt(1), []byte("test"), &ethtypes.AccessList{}),
+		},
+		{
+			"Contract creation with memo",
+			types.NewTxContract(suite.chainID, 0, big.NewInt(100), 100000, nil, big.NewInt(2), big.NewInt(1), []byte("test"), &ethtypes.AccessList{}),
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(tc.name, func() {
+			tc.msg.Memo = memo
+			tc.msg.From = validFrom
+
+			// Verify GetMemo returns correct value
+			suite.Require().Equal(memo, tc.msg.GetMemo())
+
+			// Marshal and unmarshal
+			bz, err := tc.msg.Marshal()
+			suite.Require().NoError(err)
+
+			var decoded types.MsgEthereumTx
+			err = decoded.Unmarshal(bz)
+			suite.Require().NoError(err)
+
+			// Verify memo is preserved
+			suite.Require().Equal(memo, decoded.GetMemo())
+			suite.Require().Equal(memo, decoded.Memo)
+
+			// Verify transaction validates correctly
+			err = decoded.ValidateBasic()
+			suite.Require().NoError(err)
+		})
+	}
+}
+
+func (suite *MsgsTestSuite) TestMsgEthereumTx_MemoSizeCalculation() {
+	testCases := []struct {
+		name string
+		memo string
+	}{
+		{"empty memo", ""},
+		{"short memo", "test"},
+		{"medium memo", "this is a test memo with some text"},
+		{"long memo", strings.Repeat("a", 1000)},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(tc.name, func() {
+			msg := types.NewTx(suite.chainID, 0, &suite.to, nil, 100000, big.NewInt(1), nil, nil, []byte("test"), nil)
+			msg.From = common.BigToAddress(big.NewInt(1)).Bytes()
+			msg.Memo = tc.memo
+
+			// Marshal twice and verify size is consistent
+			bz1, err := msg.Marshal()
+			suite.Require().NoError(err)
+
+			bz2, err := msg.Marshal()
+			suite.Require().NoError(err)
+
+			suite.Require().Equal(len(bz1), len(bz2))
+
+			// Unmarshal and re-marshal should produce same size
+			var decoded types.MsgEthereumTx
+			err = decoded.Unmarshal(bz1)
+			suite.Require().NoError(err)
+
+			bz3, err := decoded.Marshal()
+			suite.Require().NoError(err)
+
+			suite.Require().Equal(len(bz1), len(bz3))
+			suite.Require().Equal(bz1, bz3)
+		})
+	}
 }
 
 func (suite *MsgsTestSuite) TestValidateEthereumTx() {
