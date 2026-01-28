@@ -74,7 +74,6 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
-	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/DataDog/datadog-go v4.8.3+incompatible // indirect
 	github.com/DataDog/zstd v1.5.7 // indirect
 	github.com/GoogleCloudPlatform/opentelemetry-operations-go/detectors/gcp v1.30.0 // indirect
@@ -335,17 +334,17 @@ require (
 )
 
 replace (
-	// JayT106 cosmos-sdk fork with CometBFT v0.39 support
-	cosmossdk.io/store => github.com/JayT106/cosmos-sdk/store v0.0.0-20260127200514-ceb3437bf583
-	cosmossdk.io/x/tx => github.com/JayT106/cosmos-sdk/x/tx v0.0.0-20260127200514-ceb3437bf583
-	github.com/cosmos/cosmos-sdk => github.com/JayT106/cosmos-sdk v0.0.0-20260127200514-ceb3437bf583
+	// JayT106 cosmos-sdk fork with CometBFT v0.39 support (jt/v0.50.x-with-cometBFT-main branch)
+	cosmossdk.io/store => github.com/JayT106/cosmos-sdk/store v0.0.0-20260128192949-dc2423f535c3
+	cosmossdk.io/x/tx => github.com/JayT106/cosmos-sdk/x/tx v0.0.0-20260128192949-dc2423f535c3
+	github.com/cosmos/cosmos-sdk => github.com/JayT106/cosmos-sdk v0.0.0-20260128192949-dc2423f535c3
 )
 
 replace (
 	// use cosmos keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	// v0.39.x
-	github.com/cometbft/cometbft => github.com/JayT106/cometbft v0.0.0-20260123214422-944d05ae8278
+	// v0.39.x (jt/merge-upstream-main branch)
+	github.com/cometbft/cometbft => github.com/JayT106/cometbft v0.0.0-20260128182736-215960fd03bb
 	// release/v1.15
 	github.com/ethereum/go-ethereum => github.com/crypto-org-chain/go-ethereum v1.10.20-0.20250815065500-a4fbafcae0dd
 	// Fix upstream GHSA-h395-qcrw-5vmq vulnerability.
