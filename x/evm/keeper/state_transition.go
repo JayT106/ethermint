@@ -414,6 +414,20 @@ func (k *Keeper) ApplyMessageWithConfig(
 		tracer.OnGasChange(msg.GasLimit, leftoverGas, tracing.GasChangeTxIntrinsicGas)
 	}
 
+	// EIP-7623: gas limit must cover the floor data cost when Prague is active.
+	// Duplicated from ante handler because this path also runs for block
+	// execution (ProcessProposal/FinalizeBlock) and RPC paths that skip ante.
+	var floorDataGas uint64
+	if rules.IsPrague {
+		floorDataGas, err = core.FloorDataGas(msg.Data)
+		if err != nil {
+			return nil, err
+		}
+		if msg.GasLimit < floorDataGas {
+			return nil, errorsmod.Wrapf(core.ErrFloorDataGas, "gas %d, minimum needed %d", msg.GasLimit, floorDataGas)
+		}
+	}
+
 	// access list preparation is moved from ante handler to here, because it's needed when `ApplyMessage` is called
 	// under contexts where ante handlers are not run, for example `eth_call` and `eth_estimateGas`.
 	// Check whether the init code size has been exceeded.
@@ -470,6 +484,12 @@ func (k *Keeper) ApplyMessageWithConfig(
 	temporaryGasUsed := msg.GasLimit - leftoverGas
 	refund := GasToRefund(stateDB.GetRefund(), temporaryGasUsed, refundQuotient)
 	leftoverGas += refund
+
+	// EIP-7623: after refunds, charge at least the calldata floor.
+	if rules.IsPrague && temporaryGasUsed < floorDataGas {
+		temporaryGasUsed = floorDataGas
+		leftoverGas = msg.GasLimit - temporaryGasUsed
+	}
 
 	if tracer != nil && tracer.OnGasChange != nil {
 		tracer.OnGasChange(leftoverGas-refund, leftoverGas, tracing.GasChangeTxRefunds)

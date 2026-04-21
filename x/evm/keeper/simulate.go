@@ -368,6 +368,18 @@ func (sim *Simulator) applyCall(
 	}
 	leftoverGas -= intrinsicGas
 
+	// EIP-7623: reject below-floor and track for post-execution charge.
+	var floorDataGas uint64
+	if rules.IsPrague {
+		floorDataGas, err = core.FloorDataGas(msg.Data)
+		if err != nil {
+			return applyCallResult{}, err
+		}
+		if msg.GasLimit < floorDataGas {
+			return applyCallResult{}, fmt.Errorf("%w: have %d, want %d", core.ErrFloorDataGas, msg.GasLimit, floorDataGas)
+		}
+	}
+
 	// Shanghai init code size check
 	if rules.IsShanghai && contractCreation && len(msg.Data) > params.MaxInitCodeSize {
 		return applyCallResult{}, fmt.Errorf("%w: code size %v limit %v", core.ErrMaxInitCodeSizeExceeded, len(msg.Data), params.MaxInitCodeSize)
@@ -407,6 +419,11 @@ func (sim *Simulator) applyCall(
 	}
 	refund := GasToRefund(sim.state.GetRefund(), temporaryGasUsed, refundQuotient)
 	leftoverGas += refund
+
+	// EIP-7623: raise charged gas to the data floor after refunds.
+	if rules.IsPrague && msg.GasLimit-leftoverGas < floorDataGas {
+		leftoverGas = msg.GasLimit - floorDataGas
+	}
 
 	gasUsed := msg.GasLimit - leftoverGas
 

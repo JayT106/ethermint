@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 	"math/big"
@@ -863,5 +864,78 @@ func (suite *StateTransitionTestSuite) TestBlobBaseFeeOpcode() {
 		suite.Require().Len(result.Ret, 32, "should return 32 bytes")
 		expected := common.BigToHash(big.NewInt(42)).Bytes()
 		suite.Require().Equal(expected, result.Ret, "BLOBBASEFEE should return overridden value 42")
+	})
+}
+
+// TestApplyMessageWithConfigPragueFloorDataGas verifies EIP-7623 enforcement in
+// the execution path (ApplyMessageWithConfig), not just CheckTx. Regression for
+// CC-107: Prague floor-data-gas was previously only checked when isCheckTx was
+// true, so a Byzantine proposer could bypass the floor at FinalizeBlock.
+func (suite *StateTransitionTestSuite) TestApplyMessageWithConfigPragueFloorDataGas() {
+	// 1024 non-zero bytes gives floor > intrinsic:
+	//   intrinsicGas = 21000 + 16 * 1024       = 37384
+	//   floorDataGas = 21000 + 10 * (4 * 1024) = 61960
+	const nonZeroBytes = 1024
+	data := bytes.Repeat([]byte{0xff}, nonZeroBytes)
+
+	intrinsicGas, err := core.IntrinsicGas(data, nil, nil, false, true, true, true)
+	suite.Require().NoError(err)
+	floorDataGas, err := core.FloorDataGas(data)
+	suite.Require().NoError(err)
+	suite.Require().Greater(floorDataGas, intrinsicGas,
+		"test precondition: floor must exceed intrinsic for this calldata")
+
+	cfg, err := suite.App.EvmKeeper.EVMConfig(suite.Ctx, big.NewInt(9000), common.Hash{})
+	suite.Require().NoError(err)
+	cfg.TxConfig = suite.App.EvmKeeper.TxConfig(suite.Ctx, common.Hash{})
+	suite.Require().True(cfg.Rules.IsPrague, "Prague must be active in default chain config")
+
+	recipient := common.HexToAddress("0x1000000000000000000000000000000000000001")
+
+	suite.Run("below-floor gas limit is rejected at execution", func() {
+		vmdb := suite.StateDB()
+		msg := &core.Message{
+			From:             suite.Address,
+			To:               &recipient,
+			Nonce:            vmdb.GetNonce(suite.Address),
+			Value:            big.NewInt(0),
+			GasLimit:         intrinsicGas, // below floor
+			GasPrice:         big.NewInt(0),
+			GasFeeCap:        big.NewInt(0),
+			GasTipCap:        big.NewInt(0),
+			Data:             data,
+			SkipNonceChecks:  true,
+			SkipFromEOACheck: true,
+		}
+		suite.Require().Less(msg.GasLimit, floorDataGas,
+			"message is invalid under EIP-7623 floor data gas")
+
+		result, err := suite.App.EvmKeeper.ApplyMessageWithConfig(suite.Ctx, msg, cfg, true)
+		suite.Require().Error(err)
+		suite.Require().Contains(err.Error(), "floor data gas")
+		suite.Require().Nil(result)
+	})
+
+	suite.Run("above-floor tx charges at least floorDataGas", func() {
+		vmdb := suite.StateDB()
+		msg := &core.Message{
+			From:             suite.Address,
+			To:               &recipient,
+			Nonce:            vmdb.GetNonce(suite.Address),
+			Value:            big.NewInt(0),
+			GasLimit:         floorDataGas + 10_000,
+			GasPrice:         big.NewInt(0),
+			GasFeeCap:        big.NewInt(0),
+			GasTipCap:        big.NewInt(0),
+			Data:             data,
+			SkipNonceChecks:  true,
+			SkipFromEOACheck: true,
+		}
+
+		result, err := suite.App.EvmKeeper.ApplyMessageWithConfig(suite.Ctx, msg, cfg, true)
+		suite.Require().NoError(err)
+		suite.Require().False(result.Failed(), result.VmError)
+		suite.Require().GreaterOrEqual(result.GasUsed, floorDataGas,
+			"EIP-7623: gasUsed must be raised to at least floorDataGas")
 	})
 }
