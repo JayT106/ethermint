@@ -24,6 +24,7 @@ import (
 	tmrpcclient "github.com/cometbft/cometbft/rpc/client"
 	tmrpctypes "github.com/cometbft/cometbft/rpc/core/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -357,7 +358,7 @@ func (b *Backend) buildReceiptDirect(
 	txData := ethMsg.AsTransaction()
 	if txData == nil {
 		b.logger.Error("failed to unpack tx data")
-		return nil, err
+		return nil, errors.New("failed to unpack tx data")
 	}
 
 	var cumulativeGasUsed uint64

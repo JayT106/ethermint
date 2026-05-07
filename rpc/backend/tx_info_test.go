@@ -19,6 +19,7 @@ import (
 	ethermint "github.com/evmos/ethermint/types"
 	evmtypes "github.com/evmos/ethermint/x/evm/types"
 	"github.com/holiman/uint256"
+	"github.com/stretchr/testify/mock"
 	"google.golang.org/grpc/metadata"
 )
 
